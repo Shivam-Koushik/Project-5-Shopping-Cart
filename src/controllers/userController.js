@@ -8,11 +8,9 @@ const saltRounds = 8
 const register = async function (req, res) {
     try {
         const body = req.body
-        const files = req.files
-
-        console.log(files)
+        const profileImage = req.files
         
-        const{fname,lname,email,profileImage,phone,password,address} = body
+        const{fname,lname,email,phone,password,address} = body
         const{shipping,billing}= address
 
         if(!validator.isValidBody(body)) return res.status(400).send({ status: false, message: "Provide details incide body" })
@@ -28,8 +26,9 @@ const register = async function (req, res) {
         const uniqueEmail = await userModel.findOne({email})
         if(uniqueEmail) return res.status(409).send({ status: false, message: "email is already exist" }) 
 
-        if(files && files.length > 0){
-            const uploadImage = uploadFile(files[0])
+        if(profileImage.length==0) return res.status(409).send({ status: false, message: "ProfileImage is required" }) 
+        if(profileImage && profileImage.length > 0){
+            const uploadImage = await uploadFile(profileImage[0])
             body['profileImage'] = uploadImage;
         }
 
@@ -46,16 +45,15 @@ const register = async function (req, res) {
         if(!validator.isValidBody(shipping)) return res.status(400).send({ status: false, message: "shipping is required" })
         if(!validator.isValid(shipping.street)) return res.status(400).send({ status: false, message: "shipping street is required" })
         if(!validator.isValid(shipping.city)) return res.status(400).send({ status: false, message: "shipping city is required" })
-        // if(!validator.isValidNumber(shipping.pincode)) return res.status(400).send({ status: false, message: "shipping pincode should be number" })
+        if(!validator.isValidNumber(parseInt(shipping.pincode))) return res.status(400).send({ status: false, message: "shipping pincode should be number" })
         if(!validator.isValidPincode(shipping.pincode)) return res.status(400).send({ status: false, message: "shipping pincode is Invalid !!" })
 
         if(!validator.isValidBody(billing)) return res.status(400).send({ status: false, message: "billing is required" })
         if(!validator.isValid(billing.street)) return res.status(400).send({ status: false, message: "billing street is required" })
         if(!validator.isValid(billing.street)) return res.status(400).send({ status: false, message: "billing city is required" })
-        // if(!validator.isValidNumber(billing.pincode)) return res.status(400).send({ status: false, message: "billing pincode should bhe number" })
+        if(!validator.isValidNumber(parseInt(billing.pincode))) return res.status(400).send({ status: false, message: "billing pincode should bhe number" })
         if(!validator.isValidPincode(billing.pincode)) return res.status(400).send({ status: false, message: "billing pincode is Invalid !!" })
 
-        // body['profileImage'] = files
         const data = await userModel.create(body)
         return res.status(201).send({ status: true,message: 'Success',data: data})
 
