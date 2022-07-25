@@ -1,10 +1,11 @@
 const userModel = require('../models/userModel')
 const validator = require('../validators/validations')
-const {uploadFile} = require('../controllers/awsS3Controller')
+const {uploadFile} = require('../aws/uploadImage')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 
 const saltRounds = 8
+
 
 const register = async function (req, res) {
     try {
@@ -35,7 +36,7 @@ const register = async function (req, res) {
         if(uniqueEmail) return res.status(409).send({ status: false, message: "email is already exist" }) 
 
         // <--------profile image validation & upload on the aws server------------->
-        if(profileImage.length==0) return res.status(409).send({ status: false, message: "ProfileImage is required" }) 
+        if(profileImage.length==0) return res.status(400).send({ status: false, message: "ProfileImage is required" }) 
         if(profileImage && profileImage.length > 0){
             const uploadImage = await uploadFile(profileImage[0])
             body['profileImage'] = uploadImage;
@@ -47,7 +48,7 @@ const register = async function (req, res) {
         
         // <-----------Check phone number is exist in db or not-------------->
         const uniquePhone = await userModel.findOne({phone})
-        if(uniquePhone) return res.status(400).send({ status: false, message: "phone is already exist" })
+        if(uniquePhone) return res.status(409).send({ status: false, message: "phone is already exist" })
 
         // <---------Password validation & encrpt that---------->
         if(!password) return res.status(400).send({ status: false, message: "password is required" })
