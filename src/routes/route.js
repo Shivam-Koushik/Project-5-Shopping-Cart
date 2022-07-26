@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router(); 
 const userController = require('../controllers/userController')
+const middleware = require('../middleware/middware')
 
 
 router.post('/register',userController.register)
 router.post('/login',userController.login)
-// router.post('/user/:userId/profile',userController.getProfile)
+router.get('/user/:userId/profile',middleware.Authenticate,middleware.Authorisation,userController.getProfile)
+router.put('/user/:userId/profile',middleware.Authenticate,middleware.Authorisation,userController.updateProfile)
 
 
 router.all("*", function (req,res) {
