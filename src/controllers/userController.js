@@ -38,8 +38,13 @@ const register = async function (req, res) {
     // <--------profile image validation & upload on the aws server------------->
     if (profileImage.length == 0) return res.status(400).send({ status: false, message: "ProfileImage is required" })
     if (profileImage && profileImage.length > 0) {
-      const uploadImage = await uploadFile(profileImage[0])
-      body['profileImage'] = uploadImage;
+      if(profileImage[0].mimetype == "image/jpg" || profileImage[0].mimetype == "image/png" || profileImage[0].mimetype == "image/jpeg"){
+        const uploadImage = await uploadFile(profileImage[0])
+        body['profileImage'] = uploadImage;
+      }
+      else
+      return res.status(400).send({status : false, message:"Profile image should be in jpg, jpeg or png format !!"});
+      
     }
 
     // <----------Phone validation-------------->
@@ -158,7 +163,7 @@ const updateProfile = async function (req, res) {
     const update = {};
 
     // <--------reqBody validation----------------->
-    if (!validator.isValidBody(body)) return res.status(400).send({ status: false, message: "Provide details incide body" })
+    // if (!validator.isValidBody(body)) return res.status(400).send({ status: false, message: "Provide details incide body" })
 
     // <---------Fname validation---------------->
     if (fname) {
@@ -183,8 +188,13 @@ const updateProfile = async function (req, res) {
 
     // <--------profile image validation & upload on the aws server------------->
     if (profileImage && profileImage.length > 0) {
-      const uploadImage = await uploadFile(profileImage[0])
-      update['profileImage'] = uploadImage;
+      if(profileImage[0].mimetype == "image/jpg" || profileImage[0].mimetype == "image/png" || profileImage[0].mimetype == "image/jpeg")
+      {
+        const uploadImage = await uploadFile(profileImage[0])
+        update['profileImage'] = uploadImage;
+      }
+      else
+      return res.status(400).send({status : false, message:"Profile image should be in jpg, jpeg or png format !!"});
     }
 
     // <----------Phone validation-------------->
