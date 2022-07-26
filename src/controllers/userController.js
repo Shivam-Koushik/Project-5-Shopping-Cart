@@ -148,7 +148,7 @@ const getProfile = async function (req, res) {
 }
 
 const updateProfile = async function (req, res) {
-  // try {
+  try {
     const param = req.params.userId
     const body = req.body
     const profileImage = req.files
@@ -206,51 +206,54 @@ const updateProfile = async function (req, res) {
     }
 
     // <-------address body validation----------->
-    if (validator.isValidBody(address)) {
-      // if (!validator.isValidBody(address)) return res.status(400).send({ status: false, message: "address is required" })
+    if (address) {
+      const {shipping, billing} = address;
 
       // <-----------shipping body validation------------->
-      if (validator.isValidBody(address.shipping)) {
-        // if (!validator.isValidBody(shipping)) return res.status(400).send({ status: false, message: "shipping is required" })
+      if (shipping) {
+        let {street, city, pincode} = shipping;
+
         // <----------shipping street validation----------->
-        if (address.shipping.street) {
+        if (street) {
           if (!validator.isValid(address.shipping.street)) return res.status(400).send({ status: false, message: "shipping street is required" })
-          update['address']['shipping']['street'] = address.shipping.street;
+          update['address.shipping.street'] = street;
         }
 
         // <-----------Shipping city validation----------->
-        if (address.shipping.city) {
+        if (city) {
           if (!validator.isValid(address.shipping.city)) return res.status(400).send({ status: false, message: "shipping city is required" })
-          update['address']['shipping']['city'] = address.shipping.city;
+          update['address.shipping.city'] = city;
         }
 
         // <-----------Shipping pincode validation----------->
-        if (address.shipping.pincode) {
+        if (pincode) {
           if (!validator.isValidNumber(parseInt(address.shipping.pincode))) return res.status(400).send({ status: false, message: "shipping pincode should be number" })
           if (!validator.isValidPincode(address.shipping.pincode)) return res.status(400).send({ status: false, message: "shipping pincode is Invalid !!" })
-          update['address']['shipping']['pincode'] = address.shipping.pincode
+          update['address.shipping.pincode'] = pincode;
         }
       }
 
       // <-----------billing body validation------------->
-      if (validator.isValidBody(address.billing)) {
-        // if (!validator.isValidBody(billing)) return res.status(400).send({ status: false, message: "billing is required" })
+
+      if (billing) {
+        let {street, city, pincode} = billing;
+        
 
         // <----------billing street validation----------->
-        if (address.billing.street) {
+        if (street) {
           if (!validator.isValid(address.billing.street)) return res.status(400).send({ status: false, message: "billing street is required" })
-          update['address']['billing']['street'] = address.billing.street
+          update['address.billing.street'] = street;
         }
         // <-----------billing city validation----------->
-        if (address.billing.city) {
+        if (city) {
           if (!validator.isValid(address.billing.city)) return res.status(400).send({ status: false, message: "billing city is required" })
-          update['address']['billing']['city'] = address.billing.city
+          update['address.billing.city'] = city;
         }
         // <-----------billing pincode validation----------->
-        if (address.billing.pincode) {
+        if (pincode) {
           if (!validator.isValidNumber(parseInt(address.billing.pincode))) return res.status(400).send({ status: false, message: "billing pincode should bhe number" })
           if (!validator.isValidPincode(address.billing.pincode)) return res.status(400).send({ status: false, message: "billing pincode is Invalid !!" })
-          update['address']['billing']['pincode'] = address.billing.pincode
+          update['address.billing.pincode'] = pincode;
         }
       }
     }
@@ -258,12 +261,10 @@ const updateProfile = async function (req, res) {
     const updatedData = await userModel.findOneAndUpdate({ _id: param }, update, { new: true })
     return res.status(200).send({ status: true, message: 'Success', data: updatedData })
 
-  // } catch (err) {
-  //   return res.status(500).send({ status: false, message: err.message });
-  // }
+  } catch (err) {
+    return res.status(500).send({ status: false, message: err.message });
+  }
 }
 
-module.exports.register = register
-module.exports.login = login
-module.exports.getProfile = getProfile
-module.exports.updateProfile = updateProfile
+
+module.exports = {register, login, getProfile, updateProfile}

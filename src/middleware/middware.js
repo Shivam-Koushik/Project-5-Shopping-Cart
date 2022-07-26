@@ -34,7 +34,7 @@ const Authorisation = async function (req, res, next) {
             if(!newUserId) return res.status(400).send({ status: false, msg: 'Please enter valid userId' })
             let newAuth = newUserId._id
         
-            if (newAuth != userLoggedIn) return res.status(403).send({ status: false, msg: 'User logged is not allowed to modify the requested users data' })
+            if (newAuth != userLoggedIn) return res.status(403).send({ status: false, msg: 'Sorry U are not Authorised !!' })
         }
         // else {
             
