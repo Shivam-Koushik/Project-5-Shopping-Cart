@@ -6,10 +6,10 @@ const product = async function (req, res) {
     try {
 
         const body = req.body
-        const { title, description, price, currencyId, currencyFormat, style, installments } = body
+        const { title, description, price, currencyId, currencyFormat,isFreeShipping, style, installments } = body
         let productImage = req.files
 
-        let {isFreeShipping, availableSizes} = body;
+        let {availableSizes} = body;
 
         if (!validator.isValidBody(body)) return res.status(400).send({ status: false, message: "Provide details incide body" })
 
@@ -50,35 +50,35 @@ const product = async function (req, res) {
                 return res.status(400).send({status: false, message: "Profile image should be in jpg, jpeg or png format !!",});
         }
       
-        if(style) {
+        if(style || style == "") {
             if(!validator.isValid(style)) return res.status(400).send({ status: false, message: "provide style in valid format" });
         }
      
       
         if(availableSizes.length==0) return res.status(400).send({ status: false, message: "please select atleast one "})  
         if(availableSizes.length > 0){
-            console.log(availableSizes)
+            
             let arr = ["S", "XS", "M", "X", "L", "XXL", "XL"];
-            let result = [];
             let makeArr = availableSizes.split(',');
-            makeArr.map(ele => {
-                if((!result.includes(ele) && arr.includes(ele))) result.push(ele)
-                else return res.send("hdjfhdjsh")
-            })
-            console.log(result)
-            availableSizes = result.join(",");
+            console.log(makeArr)
+            for(let i=0; i<makeArr.length; i++) {
+                if(arr.indexOf(makeArr[i]) === -1) return res.status(400).send({status:false, message:"Please Enter the Valid Size !!"})
+            }
+            availableSizes = makeArr;
             console.log(availableSizes)
         }
 
-        if(installments){
-            if(!validator.isValidNumber(installments)) return res.status(400).send({status:false, message: "Enter a valid Number 😡"})
+        if(installments || installments == ""){
+            if(!(/^[1-9]{1,}$/.test(installments))) return res.status(400).send({status:false, message: "Enter a valid Number 😡"})
         }
 
+        body['deletedAt'] = null;
 
         const data = await productModel.create(body)
         return res.status(201).send({ status: true, message: 'Success', data: data })
 
     } catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, message: err.message })
     }
 }
