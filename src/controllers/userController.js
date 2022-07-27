@@ -115,7 +115,7 @@ const login = async function (req, res) {
     // <-------generate JWT Token and valid for 100 Minutes--------------->
     let payload = {
       userId: data._id,
-      exp: Math.floor(Date.now() / 1000) + 100 * 60,
+      exp: Math.floor(Date.now() / 1000) + 24*60 * 60,
       iat: Math.floor(Date.now() / 1000),
     };
     let token = jwt.sign(payload, "groupNumber25");
