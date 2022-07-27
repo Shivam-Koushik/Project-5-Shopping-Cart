@@ -3,16 +3,16 @@ const isValidObjectId = function (x) {
     return mongoose.Types.ObjectId.isValid(x);
 }
 
-const isValidNumber = function(x){
-    if (typeof x === 'undefined' || x === null) return false
-    if(typeof x  === "number") return true;
-}
-
 const isValid = function (x) {
     if (typeof x === 'undefined' || x === null) return false
     if (typeof x != "string" ) return false
     if (typeof x === 'string' && x.trim().length === 0) return false
     return true
+}
+
+const isValidNumber = function(x){
+    if (typeof x === 'undefined' || x === null) return false
+    if(typeof x  === "number") return true;
 }
 
 const isValidBody = function (y) {
