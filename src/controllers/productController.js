@@ -91,7 +91,8 @@ const product = async function (req, res) {
         }
 
         if (installments || installments == "") {
-            if (!/^[1-9]{1,}$/.test(installments))
+            let reg = /^[1-9][0-9]{0,2}$/;
+            if (!reg.test(installments))
                 return res.status(400).send({ status: false, message: "Enter a valid Number 😡" });
         }
 
