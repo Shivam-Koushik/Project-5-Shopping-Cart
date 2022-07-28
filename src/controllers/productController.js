@@ -121,11 +121,11 @@ const product = async function (req, res) {
 
 
 const getAllProducts = async function (req, res) {
-    try{
+    try {
         const param = req.query
-        const {size,priceGreaterThan,priceLessThan, priceSort} = param
-        let {name} = param;
-        let newObj = {isDeleted : false}
+        const { size, priceGreaterThan, priceLessThan, priceSort } = param
+        let { name } = param;
+        let newObj = { isDeleted: false }
 
         if (size || size == "") {
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
@@ -137,51 +137,51 @@ const getAllProducts = async function (req, res) {
                 if (!sizes.includes(isValidSize[i]))
                     return res.status(400).send({ status: false, message: "Please Enter the Valid Size !!" });
             }
-            newObj['availableSizes'] = {$in : isValidSize};
+            newObj['availableSizes'] = { $in: isValidSize };
         }
-    
-    
-        if(name){
+
+
+        if (name) {
             if (!(/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/).test(name)) return res.status(400).send({ status: false, message: "provide valid name" })
-          
-            
-            newObj['title'] = {$regex : name, $options : 'i'}
-            
+
+
+            newObj['title'] = { $regex: name, $options: 'i' }
+
         }
-    
-        if(priceGreaterThan){
-            newObj['price'] = {$gt : priceGreaterThan}
+
+        if (priceGreaterThan) {
+            newObj['price'] = { $gt: priceGreaterThan }
         }
-        if(priceLessThan){
-            newObj['price'] = {$lt : priceLessThan}
+        if (priceLessThan) {
+            newObj['price'] = { $lt: priceLessThan }
         }
-        if(priceLessThan && priceGreaterThan){
-            newObj['price'] =  {$gt:priceGreaterThan, $lt:priceLessThan}
+        if (priceLessThan && priceGreaterThan) {
+            newObj['price'] = { $gt: priceGreaterThan, $lt: priceLessThan }
         }
-    
+
         let sort = {};
-        if(priceSort){
-            if(!(priceSort == '1' || priceSort == '-1')) return res.status(400).send({status:false, message: "Enter only '1' or -'1' 😡"})
-            if(priceSort==1){
+        if (priceSort) {
+            if (!(priceSort == '1' || priceSort == '-1')) return res.status(400).send({ status: false, message: "Enter only '1' or -'1' 😡" })
+            if (priceSort == 1) {
                 sort['price'] = 1
             }
-            if(priceSort==-1){
+            if (priceSort == -1) {
                 sort['price'] = -1
             }
         }
 
-    
-        console.log(newObj);
-    
-        const data = await productModel.find(newObj).sort(sort)
-    
-        console.log(data.length)
-       
 
-        if(data.length == 0) return res.status(404).send({status:false,message:"No Product found or already deleted with this filterisation !!"})
-    
-        return res.status(200).send({ status: true, message: 'Success', data})
-    
+        console.log(newObj);
+
+        const data = await productModel.find(newObj).sort(sort)
+
+        console.log(data.length)
+
+
+        if (data.length == 0) return res.status(404).send({ status: false, message: "No Product found or already deleted with this filterisation !!" })
+
+        return res.status(200).send({ status: true, message: 'Success', data })
+
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
@@ -217,7 +217,7 @@ const updateProduct = async function (req, res) {
             let isExistTitle = await productModel.findOne({ title });
             if (isExistTitle)
                 return res.status(409).send({ status: false, message: "Title Should be Unique !!" });
-            updatedData['title'] =  title ;
+            updatedData['title'] = title;
         }
 
         console.log(updatedData)
@@ -225,7 +225,7 @@ const updateProduct = async function (req, res) {
         if (description || description == "") {
             if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/.test(description))
                 return res.status(400).send({ status: false, message: "provide valid description !!" });
-            updatedData['description'] = description ;
+            updatedData['description'] = description;
         }
 
         if (price || price == "") {
@@ -234,19 +234,19 @@ const updateProduct = async function (req, res) {
                     status: false,
                     message: "price is not in the valid formate",
                 });
-            updatedData['price'] =  price ;
+            updatedData['price'] = price;
         }
 
         if (currencyId || currencyId == "") {
             if (currencyId != "INR")
                 return res.status(400).send({ status: false, message: "provide valid currencyId" });
-            updatedData['currencyId'] = currencyId ;
+            updatedData['currencyId'] = currencyId;
         }
 
         if (currencyFormat || currencyFormat == "") {
             if (currencyFormat != "₹")
                 return res.status(400).send({ status: false, message: "provide valid currencyFormat" });
-            updatedData['currencyFormat'] = currencyFormat ;
+            updatedData['currencyFormat'] = currencyFormat;
         }
 
         if (isFreeShipping || isFreeShipping == "") {
@@ -255,7 +255,7 @@ const updateProduct = async function (req, res) {
                     status: false,
                     massage: "isFreeShipping should be a boolean value",
                 });
-            updatedData['isFreeShipping'] =  isFreeShipping ;
+            updatedData['isFreeShipping'] = isFreeShipping;
         }
 
         if (productImage && productImage.length > 0) {
@@ -266,7 +266,7 @@ const updateProduct = async function (req, res) {
             ) {
                 const uploadImage = await uploadFile(productImage[0]);
                 productImage = uploadImage;
-                updatedData['productImage'] =  productImage ;
+                updatedData['productImage'] = productImage;
             } else
                 return res.status(400).send({
                     status: false,
@@ -285,7 +285,7 @@ const updateProduct = async function (req, res) {
                     return res.status(400).send({ status: false, message: "Please Enter the Valid Size !!" });
             }
             availableSizes = isValidSize;
-            updatedData['availableSizes'] =  availableSizes ;
+            updatedData['availableSizes'] = availableSizes;
         }
 
         if (style || style == "") {
@@ -295,9 +295,9 @@ const updateProduct = async function (req, res) {
         }
 
         if (installments || installments == "") {
-            if (!/^[1-9]{1,}[0-9]{,2}$/.test(installments))
+            if (!/^[1-9][0-9]{0,2}$/.test(installments))
                 return res.status(400).send({ status: false, message: "Enter a valid Number 😡" });
-            updatedData['installments'] =  installments ;
+            updatedData['installments'] = installments;
         }
 
         console.log(updatedData)
@@ -332,10 +332,10 @@ const deleteProductById = async function (req, res) {
         let productId = req.params.productId
         if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Productid is not valid" })
 
-        let data = await productModel.findOne({ _id: productId, isDeleted : false })
+        let data = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!data) return res.status(404).send({ status: false, message: "No such product found or already deleted" })
 
-        await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt : new Date() }, {new : true})
+        await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: new Date() }, { new: true })
         return res.status(200).send({ status: true, message: "Successfully deleted the product" })
 
 
@@ -344,4 +344,4 @@ const deleteProductById = async function (req, res) {
     }
 }
 
-module.exports = { product,getAllProducts, updateProduct, getProductById, deleteProductById};
+module.exports = { product, getAllProducts, updateProduct, getProductById, deleteProductById };
