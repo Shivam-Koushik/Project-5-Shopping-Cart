@@ -148,9 +148,6 @@ const getAllProducts = async function (req, res) {
             
         }
     
-        
-    
-        
         if(priceGreaterThan){
             newObj['price'] = {$gt : priceGreaterThan}
         }
@@ -185,7 +182,6 @@ const getAllProducts = async function (req, res) {
         return res.status(200).send({ status: true, message: 'Success', data})
     
     } catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: err.message })
     }
 }
@@ -220,13 +216,15 @@ const updateProduct = async function (req, res) {
             let isExistTitle = await productModel.findOne({ title });
             if (isExistTitle)
                 return res.status(409).send({ status: false, message: "Title Should be Unique !!" });
-            updatedData = { title };
+            updatedData['title'] =  title ;
         }
+
+        console.log(updatedData)
 
         if (description || description == "") {
             if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/.test(description))
                 return res.status(400).send({ status: false, message: "provide valid description !!" });
-            updatedData = { description };
+            updatedData['description'] = description ;
         }
 
         if (price || price == "") {
@@ -235,19 +233,19 @@ const updateProduct = async function (req, res) {
                     status: false,
                     message: "price is not in the valid formate",
                 });
-            updatedData = { price };
+            updatedData['price'] =  price ;
         }
 
         if (currencyId || currencyId == "") {
             if (currencyId != "INR")
                 return res.status(400).send({ status: false, message: "provide valid currencyId" });
-            updatedData = { currencyId };
+            updatedData['currencyId'] = currencyId ;
         }
 
         if (currencyFormat || currencyFormat == "") {
             if (currencyFormat != "₹")
                 return res.status(400).send({ status: false, message: "provide valid currencyFormat" });
-            updatedData = { currencyFormat };
+            updatedData['currencyFormat'] = currencyFormat ;
         }
 
         if (isFreeShipping || isFreeShipping == "") {
@@ -256,7 +254,7 @@ const updateProduct = async function (req, res) {
                     status: false,
                     massage: "isFreeShipping should be a boolean value",
                 });
-            updatedData = { isFreeShipping };
+            updatedData['isFreeShipping'] =  isFreeShipping ;
         }
 
         if (productImage && productImage.length > 0) {
@@ -267,7 +265,7 @@ const updateProduct = async function (req, res) {
             ) {
                 const uploadImage = await uploadFile(productImage[0]);
                 productImage = uploadImage;
-                updatedData = { productImage };
+                updatedData['productImage'] =  productImage ;
             } else
                 return res.status(400).send({
                     status: false,
@@ -286,7 +284,7 @@ const updateProduct = async function (req, res) {
                     return res.status(400).send({ status: false, message: "Please Enter the Valid Size !!" });
             }
             availableSizes = isValidSize;
-            updatedData = { availableSizes };
+            updatedData['availableSizes'] =  availableSizes ;
         }
 
         if (style || style == "") {
@@ -296,11 +294,12 @@ const updateProduct = async function (req, res) {
         }
 
         if (installments || installments == "") {
-            if (!/^[1-9]{1,}$/.test(installments))
+            if (!/^[1-9]{1,}[0-9]{,2}$/.test(installments))
                 return res.status(400).send({ status: false, message: "Enter a valid Number 😡" });
-            updatedData = { installments };
+            updatedData['installments'] =  installments ;
         }
 
+        console.log(updatedData)
         let updatedDoc = await productModel.findOneAndUpdate(
             { _id: productId },
             updatedData,
