@@ -122,26 +122,33 @@ const product = async function (req, res) {
 const getAllProducts = async function (req, res) {
     try{
         const param = req.query
-        const {size,name,priceGreaterThan,priceLessThan, priceSort} = param
+        const {size,priceGreaterThan,priceLessThan, priceSort} = param
+        let {name} = param;
         let newObj = {isDeleted : false}
-    
-        if(size || size == ""){
-                
-            let arr = ["S", "XS", "M", "X", "L", "XXL", "XL"];
-            let makeArr = size.split(',').map(ele => ele.toUpperCase().trim());
-            // console.log(makeArr)
-            for(let i=0; i<makeArr.length; i++) {
-                if(arr.indexOf(makeArr[i]) === -1) return res.status(400).send({status:false, message:"Please Enter the Valid Size !!"})
+
+        if (size || size == "") {
+            let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+            let isValidSize = size
+                .split(",")
+                .map((ele) => ele.toUpperCase().trim());
+            console.log(isValidSize);
+            for (let i = 0; i < isValidSize.length; i++) {
+                if (!sizes.includes(isValidSize[i]))
+                    return res.status(400).send({ status: false, message: "Please Enter the Valid Size !!" });
             }
-            newObj['availableSizes'] = makeArr;
+            newObj['availableSizes'] = {$in : isValidSize};
         }
     
     
         if(name){
-            if (!(/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/).test(name)) return res.status(400).send({ status: false, message: "provide valid title" })
-            newObj['title'] = name;
+            if (!(/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/).test(name)) return res.status(400).send({ status: false, message: "provide valid name" })
+          
+            
+            newObj['title'] = {$regex : name, $options : 'i'}
+            
         }
     
+        
     
         
         if(priceGreaterThan){
@@ -164,10 +171,16 @@ const getAllProducts = async function (req, res) {
                 sort['price'] = -1
             }
         }
+
+    
         console.log(newObj);
     
         const data = await productModel.find(newObj).sort(sort)
-        
+    
+        console.log(data.length)
+       
+
+        if(data.length == 0) return res.status(404).send({status:false,message:"No Product found or already deleted with this filterisation !!"})
     
         return res.status(200).send({ status: true, message: 'Success', data})
     
