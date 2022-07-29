@@ -17,6 +17,8 @@ router.put('/products/:productId', productController.updateProduct)
 router.get('/products/:productId', productController.getProductById)
 router.delete('/products/:productId', productController.deleteProductById)
 
+//<------------------Cart Api's-------------------------->
+
 
 
 router.all("*", function (req,res) {
