@@ -5,10 +5,10 @@ const { uploadFile } = require("../aws/uploadImage");
 const product = async function (req, res) {
     try {
         const body = req.body;
-        const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, installments } = body;
+        const { title, description, currencyId, currencyFormat, isFreeShipping, style, installments } = body;
         let productImage = req.files;
 
-        let { availableSizes } = body;
+        let { availableSizes,price} = body;
         let passData = {};
 
         if (!validator.isValidBody(body))
@@ -31,8 +31,19 @@ const product = async function (req, res) {
 
         if (!price)
             return res.status(400).send({ status: false, message: "price is required" });
-        if (!/^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/.test(price))
-            return res.status(400).send({ status: false, message: "price is not in the valid formate" });
+        // if (!/^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/.test(price))
+        //     return res.status(400).send({ status: false, message: "price is not in the valid formate" });
+
+        if (price || price == "") {
+            if (!/^[1-9]+\.?[0-9]*$/.test(price))
+                return res.status(400).send({
+                    status: false,
+                    message: "price is not in the valid formate",
+                });
+            let dec = Number(price).toFixed(2);
+            price = dec;
+        }
+
 
         if (!currencyId)
             return res.status(400).send({ status: false, message: "currencyId is required" });
@@ -82,7 +93,6 @@ const product = async function (req, res) {
             let isValidSize = availableSizes
                 .split(",")
                 .map((ele) => ele.toUpperCase().trim());
-            console.log(isValidSize);
             for (let i = 0; i < isValidSize.length; i++) {
                 if (!sizes.includes(isValidSize[i]))
                     return res.status(400).send({ status: false, message: "Please Enter the Valid Size !!" });
@@ -228,13 +238,16 @@ const updateProduct = async function (req, res) {
             updatedData['description'] = description;
         }
 
+        // ^[1-9]+\.?[0-9]*$
+        // /^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/
         if (price || price == "") {
-            if (!/^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/.test(price))
+            if (!/^[1-9]+\.?[0-9]*$/.test(price))
                 return res.status(400).send({
                     status: false,
                     message: "price is not in the valid formate",
                 });
-            updatedData['price'] = price;
+                let dec = Number(price).toFixed(2);
+            updatedData['price'] = dec;
         }
 
         if (currencyId || currencyId == "") {
