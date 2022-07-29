@@ -228,7 +228,7 @@ const updateProduct = async function (req, res) {
         }
 
         if (price || price == "") {
-            if (/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
+            if (!/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
                 return res.status(400).send({
                     status: false,
                     message: "price is not in the valid formate",
