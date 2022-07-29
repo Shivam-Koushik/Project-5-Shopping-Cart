@@ -10,18 +10,20 @@ const product = async function (req, res) {
         let {title} = body;
         let productImage = req.files;
 
-        title = title.replace(/\s+/g, ' ').trim();
-
+        
         let { availableSizes } = body;
         let passData = {};
-
+        
         if (!validator.isValidBody(body))
-            return res.status(400).send({ status: false, message: "Provide details incide body " });
-
+        return res.status(400).send({ status: false, message: "Provide details incide body " });
+        
         if (!title)
-            return res
-                .status(400)
-                .send({ status: false, message: "title is required" });
+        return res
+        .status(400)
+        .send({ status: false, message: "title is required" });
+
+        title = title.replace(/\s+/g, ' ').trim();
+        
         if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/.test(title))
             return res.status(400).send({ status: false, message: "provide valid title" });
             
@@ -202,16 +204,16 @@ const updateProduct = async function (req, res) {
             installments,
         } = body;
         let availableSizes = body.availableSizes;
-        title = title.replace(/\s+/g, ' ').trim();
         let updatedData = {};
-
+        
         if (!validator.isValidObjectId(productId))
-            return res.status(400).send({ status: false, message: "Enter a Valid ProductId  !!" });
-
+        return res.status(400).send({ status: false, message: "Enter a Valid ProductId  !!" });
+        
         if (!validator.isValidBody(body))
-            return res.status(400).send({ status: false, message: "Enter some details !!" });
-
+        return res.status(400).send({ status: false, message: "Enter some details !!" });
+        
         if (title || title == "") {
+            title = title.replace(/\s+/g, ' ').trim();
             if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/.test(title))
                 return res.status(400).send({ status: false, message: "provide valid title" });
             let isExistTitle = await productModel.findOne({ title });
@@ -228,7 +230,7 @@ const updateProduct = async function (req, res) {
         }
 
         if (price || price == "") {
-            if (/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
+            if (!/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
                 return res.status(400).send({
                     status: false,
                     message: "price is not in the valid formate",
