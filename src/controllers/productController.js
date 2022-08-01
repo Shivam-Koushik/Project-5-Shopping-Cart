@@ -23,7 +23,7 @@ const product = async function (req, res) {
         .send({ status: false, message: "title is required" });
 
         title = title.replace(/\s+/g, ' ').trim();
-        
+
         if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/.test(title))
             return res.status(400).send({ status: false, message: "provide valid title" });
             
@@ -177,7 +177,6 @@ const getAllProducts = async function (req, res) {
 
         const data = await productModel.find(newObj).sort(sort)
 
-        console.log(data.length)
 
         if (data.length == 0) return res.status(404).send({ status: false, message: "No Product found or already deleted with this filterisation !!" })
 
@@ -336,7 +335,7 @@ const deleteProductById = async function (req, res) {
         let data = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!data) return res.status(404).send({ status: false, message: "No such product found or already deleted" })
 
-        await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: new Date() }, { new: true })
+        await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: new Date() })
         return res.status(200).send({ status: true, message: "Successfully deleted the product" })
 
 
