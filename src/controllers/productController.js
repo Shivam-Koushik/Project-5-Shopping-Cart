@@ -1,17 +1,14 @@
 const validator = require("../validators/validations");
 const productModel = require("../models/productModel");
 const { uploadFile } = require("../aws/uploadImage");
-const { findOne } = require("../models/productModel");
 
 const product = async function (req, res) {
     try {
         const body = req.body;
-        const {  description, price, currencyId, currencyFormat, isFreeShipping, style, installments } = body;
-        let {title} = body;
+        const {  description, currencyId, currencyFormat, isFreeShipping, style, installments } = body;
+        let {title, price, availableSizes} = body;
         let productImage = req.files;
 
-        
-        let { availableSizes } = body;
         let passData = {};
         
         if (!validator.isValidBody(body))
@@ -22,8 +19,8 @@ const product = async function (req, res) {
         .status(400)
         .send({ status: false, message: "title is required" });
 
-        title = title.replace(/\s+/g, ' ').trim();
-
+        title = title.replace(/\s+/, ' ').trim();
+        
         if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,22}$/.test(title))
             return res.status(400).send({ status: false, message: "provide valid title" });
             
@@ -38,8 +35,19 @@ const product = async function (req, res) {
 
         if (!price)
             return res.status(400).send({ status: false, message: "price is required" });
-        if (!/^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/.test(price))
-            return res.status(400).send({ status: false, message: "price is not in the valid formate" });
+        // if (!/^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/.test(price))
+        //     return res.status(400).send({ status: false, message: "price is not in the valid formate" });
+
+        if (price || price == "") {
+            if (!/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
+                return res.status(400).send({
+                    status: false,
+                    message: "price is not in the valid formate",
+                });
+            // let dec = Number(price).toFixed(2);
+            // price = dec;
+        }
+
 
         if (!currencyId)
             return res.status(400).send({ status: false, message: "currencyId is required" });
@@ -82,7 +90,7 @@ const product = async function (req, res) {
                 return res.status(400).send({ status: false, message: "provide style in valid format" });
         }
 
-        if (body.availableSizes || body.availableSizes == "") {
+        if (availableSizes || availableSizes == "") {
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
             let isValidSize = availableSizes
                 .split(",")
@@ -192,8 +200,7 @@ const updateProduct = async function (req, res) {
         const productId = req.params.productId;
         const body = req.body;
         let productImage = req.files;
-        let {
-            title,
+        const {
             description,
             price,
             currencyId,
@@ -202,7 +209,7 @@ const updateProduct = async function (req, res) {
             style,
             installments,
         } = body;
-        let availableSizes = body.availableSizes;
+        let {availableSizes, title} = body;
         let updatedData = {};
         
         if (!validator.isValidObjectId(productId))
@@ -228,13 +235,16 @@ const updateProduct = async function (req, res) {
             updatedData['description'] = description;
         }
 
+        // ^[1-9]+\.?[0-9]*$
+        // /^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/
         if (price || price == "") {
             if (!/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
                 return res.status(400).send({
                     status: false,
                     message: "price is not in the valid formate",
                 });
-            updatedData['price'] = price;
+                let dec = Number(price).toFixed(2);
+            updatedData['price'] = dec;
         }
 
         if (currencyId || currencyId == "") {
@@ -301,13 +311,13 @@ const updateProduct = async function (req, res) {
         }
 
 
-        let updatedDoc = await productModel.findOneAndUpdate(
+        let data = await productModel.findOneAndUpdate(
             { _id: productId },
             updatedData,
             { new: true }
         );
 
-        return res.status(200).send({ status: true, message: "Updated successfully !!", data: updatedDoc, });
+        return res.status(200).send({ status: true, message: "Updated successfully !!", data });
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message });
     }
@@ -318,9 +328,9 @@ const getProductById = async function (req, res) {
         let productId = req.params.productId
         if (!validator.isValidObjectId(productId)) return res.status(400).send({ ststus: false, message: "Productid is not valid" })
 
-        let productDetails = await productModel.findOne({ _id: productId, isDeleted: false })
-        if (!productDetails) return res.status(404).send({ status: false, message: "Bhai jab product hai hi ni to q search kr ra hai 😡 !!" })
-        return res.status(200).send({ status: true, message: "Success", data: productDetails })
+        let data = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!data) return res.status(404).send({ status: false, message: "Bhai jab product hai hi ni to q search kr ra hai 😡 !!" })
+        return res.status(200).send({ status: true, message: "Success", data })
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
