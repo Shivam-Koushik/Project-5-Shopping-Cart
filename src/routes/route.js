@@ -21,6 +21,8 @@ router.delete('/products/:productId', productController.deleteProductById)
 //<------------------Cart Api's-------------------------->
 router.post('/users/:userId/cart',middleware.Authenticate,middleware.Authorisation, cartController.createCart)
 router.put('/users/:userId/cart',middleware.Authenticate,middleware.Authorisation, cartController.updateCart)
+router.get('/users/:userId/cart',middleware.Authenticate,middleware.Authorisation, cartController.getCart)
+router.delete('/users/:userId/cart',middleware.Authenticate,middleware.Authorisation, cartController.deleteCart)
 
 router.all("*", function (req,res) {
     res.status(404).send({

@@ -1,7 +1,9 @@
 const cartModel = require('../models/cartModel');
 const productModel = require('../models/productModel');
+const { update } = require('../models/userModel');
 const userModel = require('../models/userModel')
-const validator = require('../validators/validations')
+const validator = require('../validators/validations');
+const { product } = require('./productController');
 
 const createCart = async function (req, res) {
     try {
@@ -65,7 +67,7 @@ const createCart = async function (req, res) {
                 totalItems: 1,
             };
             const createCart = await cartModel.create(cartData);
-            return res.status(201).send({ status: true, message: `Cart created successfully`, data: createCart });
+            return res.status(201).send({ status: true, message: 'Cart created successfully', data: createCart });
         }
 
         // <------------If Cart Doc exist in db then we have to update that-------------->
@@ -88,7 +90,7 @@ const createCart = async function (req, res) {
                         updatedCart,
                         { new: true }
                     );
-                    return res.status(200).send({ status: true, message: `Product added successfully`, data: responseData });
+                    return res.status(200).send({ status: true, message: 'Product added successfully', data: responseData });
                 }
             }
             arr.push({ productId: productId, quantity: quantity });
@@ -99,7 +101,7 @@ const createCart = async function (req, res) {
             };
 
             let responseData = await cartModel.findOneAndUpdate({ _id: findUserCart._id }, updatedCart, { new: true });
-            return res.status(200).send({ status: true, message: `Product added successfully`, data: responseData });
+            return res.status(200).send({ status: true, message: 'Product added successfully', data: responseData });
         }
     }
     catch (err) {
@@ -112,9 +114,6 @@ const createCart = async function (req, res) {
 const updateCart = async function (req, res) {
     try {
         const userId = req.params.userId;
-
-        if (!userId)
-            return res.status(400).send({ status: false, message: " UserId  is not present in param !!" })
 
         if (!validator.isValidObjectId(userId))
             return res.status(400).send({ status: false, message: " user id is not valid" });
@@ -153,45 +152,93 @@ const updateCart = async function (req, res) {
         if (!(removeProduct == '1' || removeProduct == '0'))
             return res.status(400).send({ status: false, message: "removeProduct  should be 0 or either 1 !!" })
 
-            let cartArr = cartDoc.items
-            let newCartId = cartDoc._id.toString()
+        let cartArr = cartDoc.items
+        let newCartId = cartDoc._id.toString()
 
         if (removeProduct == 0) {
-            
+
             for (let i = 0; i < cartArr.length; i++) {
                 if (cartArr[i].productId.toString() === productId) {
-                   let productPrice =cartDoc.totalPrice - cartArr[i].quantity*productDoc.price
-                   let passObj = {totalPrice:productPrice,totalItems:cartDoc.totalItems-1,$pull : {"items" : {productId} }}
-                   const newCart = await cartModel.findOneAndUpdate({_id:newCartId},passObj,{new:true}) 
-                   return res.status(200).send({status: true, message: `Product update successfully`, data: newCart})
+                    let productPrice = cartDoc.totalPrice - cartArr[i].quantity * productDoc.price
+                    let passObj = { totalPrice: productPrice, totalItems: cartDoc.totalItems - 1, $pull: { "items": { productId } } }
+                    const newCart = await cartModel.findOneAndUpdate({ _id: newCartId }, passObj, { new: true })
+                    return res.status(200).send({ status: true, message: 'Product update successfully', data: newCart })
                 }
             }
         }
-    
 
-        if(removeProduct == 1){
-            for(let i=0; i<cartArr.length; i++){
+
+        if (removeProduct == 1) {
+            for (let i = 0; i < cartArr.length; i++) {
                 if (cartArr[i].productId.toString() === productId) {
-                    
-                    let productPrice =cartDoc.totalPrice - productDoc.price
-                    
-                    cartDoc.totalPrice = productPrice,
-                    cartArr[i].quantity = cartArr[i].quantity-1
 
-                    if(cartArr[i].quantity==0){
-                        let passObj = {totalPrice:productPrice,totalItems:cartDoc.totalItems-1,$pull : {"items" : {productId} }}
-                        const newCart = await cartModel.findOneAndUpdate({_id:newCartId},passObj,{new:true}) 
-                        return res.status(200).send({status: true, message: `Product update successfully`, data: newCart})
+                    let productPrice = cartDoc.totalPrice - productDoc.price
+
+                    cartDoc.totalPrice = productPrice,
+                        cartArr[i].quantity = cartArr[i].quantity - 1
+
+                    if (cartArr[i].quantity == 0) {
+                        let passObj = { totalPrice: productPrice, totalItems: cartDoc.totalItems - 1, $pull: { "items": { productId } } }
+                        const newCart = await cartModel.findOneAndUpdate({ _id: newCartId }, passObj, { new: true })
+                        return res.status(200).send({ status: true, message: `Product update successfully`, data: newCart })
                     }
-                   
-                    const newCart = await cartModel.findOneAndUpdate({_id:newCartId},cartDoc,{new:true}) 
-                    return res.status(200).send({status: true, message: `Product update successfully`, data: newCart})   
-            } 
+
+                    const newCart = await cartModel.findOneAndUpdate({ _id: newCartId }, cartDoc, { new: true })
+                    return res.status(200).send({ status: true, message: 'Product update successfully', data: newCart })
+                }
+            }
         }
-    }
-    }catch (err) {
+    } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
 }
 
-module.exports = { createCart, updateCart }
+
+const getCart = async function (req, res) {
+    try {
+        const userId = req.params.userId
+
+        if (!validator.isValidObjectId(userId))
+            return res.status(400).send({ status: false, message: " user id is not valid 😡" });
+
+        let userDoc = await userModel.findById(userId);
+
+        if (!userDoc)
+            return res.status(404).send({ status: false, message: "No User found with this userId 😡" })
+
+        const data = await cartModel.findOne({ userId: userId }).populate('items.productId')
+        if (!data) return res.status(404).send({ status: false, message: "Cart not exist 😭" })
+        return res.status(200).send({ status: true, message: 'success 😉', data: data })
+
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+    }
+}
+const deleteCart = async function (req, res) {
+    try {
+        const userId = req.params.userId
+
+        if (!validator.isValidObjectId(userId))
+            return res.status(400).send({ status: false, message: " user id is not valid 😡" });
+
+        let userDoc = await userModel.findById(userId);
+
+        if (!userDoc)
+            return res.status(404).send({ status: false, message: "No User found with this userId 😡" })
+
+        const cartData = await cartModel.findOne({ userId: userId })
+        if (!cartData) return res.status(404).send({ status: false, message: "Cart not exist 😭" })
+
+        if(cartData.items.length===0) return res.status(400).send({ status: false, message: "Cart is already deleted 😒" })
+ 
+        const newObj = {items:[], totalPrice:0, totalItems:0}
+
+        const data = await cartModel.findOneAndUpdate({userId:userId},newObj, {new:true}) 
+
+        return res.status(204).send({ status: true, message: 'success 😉', data: data })
+
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+    }
+}
+module.exports = { createCart, updateCart, getCart,deleteCart }
