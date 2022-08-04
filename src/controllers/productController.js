@@ -30,7 +30,7 @@ const product = async function (req, res) {
 
         if (!description)
             return res.status(400).send({ status: false, message: "description is required" });
-        if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,38}$/.test(title))
+        if (!/^[A-Za-z]{2,}[\w\d\s\.\W\D]{1,38}$/.test(description))
             return res.status(400).send({ status: false, message: "provide valid description" });
 
         if (!price)
@@ -102,7 +102,7 @@ const product = async function (req, res) {
             }
             availableSizes = isValidSize;
         }
-
+    
         if (installments || installments == "") {
             let reg = /^[1-9][0-9]{0,2}$/;
             if (!reg.test(installments))
@@ -214,6 +214,11 @@ const updateProduct = async function (req, res) {
         
         if (!validator.isValidObjectId(productId))
         return res.status(400).send({ status: false, message: "Enter a Valid ProductId  !!" });
+
+        let isProductExist = await productModel.findOne({_id : productId, isDeleted: false});
+
+        if(!isProductExist)
+            return res.status(404).send({ status: false, message:"No product Found With this product id"});
         
         if (!validator.isValidBody(body))
         return res.status(400).send({ status: false, message: "Enter some details !!" });
@@ -312,7 +317,7 @@ const updateProduct = async function (req, res) {
 
 
         let data = await productModel.findOneAndUpdate(
-            { _id: productId },
+            { _id: productId, isDeleted: false},
             updatedData,
             { new: true }
         );

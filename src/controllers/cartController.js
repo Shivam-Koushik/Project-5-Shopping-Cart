@@ -20,6 +20,9 @@ const createCart = async function (req, res) {
         // let { items, userId } = data;
         let { productId, quantity } = data;
 
+        if(!productId)
+            return res.status(400).send({ status: false, message: "Product ID is required" })
+
         if (quantity) {
             if (quantity <= 0)
                 return res.status(400).send({ status: false, message: "quantity must be greater than 0" });

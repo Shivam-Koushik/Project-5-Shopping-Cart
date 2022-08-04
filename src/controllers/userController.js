@@ -4,7 +4,7 @@ const { uploadFile } = require("../aws/uploadImage");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const saltRounds = 8;
+const saltRounds = 10;
 
 const register = async function (req, res) {
   try {
@@ -63,6 +63,9 @@ const register = async function (req, res) {
       return res
         .status(400)
         .send({ status: false, message: "ProfileImage is required" });
+
+        
+
     if (profileImage && profileImage.length > 0) {
       if (
         profileImage[0].mimetype == "image/jpg" ||
@@ -109,7 +112,7 @@ const register = async function (req, res) {
           status: false,
           message: "password is not in the valid formate",
         });
-    let encryptPassword = await bcrypt.hash(password, saltRounds);
+    let encryptPassword = await bcrypt.hash(password , saltRounds);
 
     body["password"] = encryptPassword;
 
@@ -247,6 +250,9 @@ const getProfile = async function (req, res) {
   try {
     const param = req.params.userId;
 
+    if(!validator.isValidObjectId(param))
+      return res.status(400).send({status :false, message:"invalid UserId !!"})
+
     const data = await userModel.findById(param);
     if (!data)
       return res
@@ -265,6 +271,9 @@ const updateProfile = async function (req, res) {
     const param = req.params.userId;
     const body = req.body;
     const profileImage = req.files;
+
+    if(!validator.isValidBody(body))
+      return res.status(400).send({ status :false, message:"Please enter some inputs !!" });
 
     const { fname, lname, email, phone, address } = body;
     let password = body.password;
