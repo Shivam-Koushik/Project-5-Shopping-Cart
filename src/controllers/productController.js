@@ -240,8 +240,6 @@ const updateProduct = async function (req, res) {
             updatedData['description'] = description;
         }
 
-        // ^[1-9]+\.?[0-9]*$
-        // /^[1-9]{1,}[\.]{0,1}[0-9]{0,2}$/
         if (price || price == "") {
             if (!/^[1-9]\d{0,8}(?:\.\d{1,2})?$/.test(price))
                 return res.status(400).send({

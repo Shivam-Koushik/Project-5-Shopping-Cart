@@ -79,31 +79,36 @@ const updateOrder = async function (req, res) {
         const { orderId, status } = body;
 
         if (!validator.isValidObjectId(userId))
-            return res.status(400).send({ status: false, message: "UserId is invalid !!" })
+            return res.status(400).send({ status: false, message: "UserId is invalid !! 🙄" })
 
         // body Validation
         if (!validator.isValidBody(body))
-            return res.status(400).send({ status: false, message: "Body is not valid" });
+            return res.status(400).send({ status: false, message: "Body is not valid 🙄" });
 
         // orderId validation
         if (!orderId)
-            return res.status(400).send({ status: false, message: "orderId is Required !!" });
+            return res.status(400).send({ status: false, message: "orderId is Required !! 🙄" });
 
         if (!validator.isValidObjectId(orderId))
-            return res.status(400).send({ status: false, message: "orderId is invalid !!" })
+            return res.status(400).send({ status: false, message: "orderId is invalid !! 🙄" })
 
         const orderDoc = await orderModel.findOne({ _id: orderId, userId }).lean();
 
-        if (!orderDoc) return res.status(404).send({ status: false, message: `No Order Found of This User ${userId}` });
 
-        if (!status) return res.status(400).send({ status: false, message: "status is required" });
+        if (!orderDoc) return res.status(404).send({ status: false, message: `No Order Found of This User ${userId} 🙄` });
+
+        if (!status) return res.status(400).send({ status: false, message: "status is required 🙄" });
 
         if (!(status == 'pending' || status == 'completed' || status == 'canceled'))
 
-            return res.status(400).send({ status: false, message: `Status (${status}) should be pending , completed or canceled ` });
+            return res.status(400).send({ status: false, message: `Status (${status}) should be pending , completed or canceled 🙄` });
+
+        if(orderDoc.status === "completed" || orderDoc.status === "canceled")
+            return res.status(400).send({ status: false, message: "Order is already in processed or canceled!! 🙄" });
+
 
         if ((status === 'canceled') && (orderDoc.cancellable === false)) {
-            return res.status(400).send({ status: false, message: "Order is not cancellable" });
+            return res.status(400).send({ status: false, message: "Order is not cancellable 🙄" });
         }
         orderDoc['status'] = status;
         
