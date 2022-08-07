@@ -316,21 +316,25 @@ const updateProfile = async function (req, res) {
     }
 
     // <--------profile image validation & upload on the aws server------------->
-    if (profileImage && profileImage.length > 0) {
-      if (
-        profileImage[0].mimetype == "image/jpg" ||
-        profileImage[0].mimetype == "image/png" ||
-        profileImage[0].mimetype == "image/jpeg"
-      ) {
-        const uploadImage = await uploadFile(profileImage[0]);
-        update["profileImage"] = uploadImage;
-      } else
-        return res
-          .status(400)
-          .send({
-            status: false,
-            message: "Profile image should be in jpg, jpeg or png format !!",
-          });
+    if (profileImage) {
+      if (profileImage.length === 0) return res.status(400).send({ status: false, message: "Please Choose a Image !!" })
+
+      else if (profileImage.length > 0) {
+        if (
+          profileImage[0].mimetype == "image/jpg" ||
+          profileImage[0].mimetype == "image/png" ||
+          profileImage[0].mimetype == "image/jpeg"
+        ) {
+          const uploadImage = await uploadFile(profileImage[0]);
+          update["profileImage"] = uploadImage;
+        } else
+          return res
+            .status(400)
+            .send({
+              status: false,
+              message: "Profile image should be in jpg, jpeg or png format !!",
+            });
+      }
     }
 
     // <----------Phone validation-------------->

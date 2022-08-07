@@ -219,7 +219,7 @@ const updateProduct = async function (req, res) {
         if(!isProductExist)
             return res.status(404).send({ status: false, message:"No product Found With this product id"});
         
-        if (!validator.isValidBody(body))
+        if (!validator.isValidBody(body) && !req.files)
         return res.status(400).send({ status: false, message: "Enter some details !!" });
         
         if (title || title == "") {
@@ -270,21 +270,28 @@ const updateProduct = async function (req, res) {
             updatedData['isFreeShipping'] = isFreeShipping;
         }
 
-        if (productImage && productImage.length > 0) {
-            if (
+        // <----------productImage Validation-------------->
+        if (productImage) {
+            if (productImage.length === 0) return res.status(400).send({ status: false, message: "Please Choose a Image !!" })
+      
+            else if (productImage.length > 0) {
+              if (
                 productImage[0].mimetype == "image/jpg" ||
                 productImage[0].mimetype == "image/png" ||
                 productImage[0].mimetype == "image/jpeg"
-            ) {
+              ) {
                 const uploadImage = await uploadFile(productImage[0]);
-                productImage = uploadImage;
-                updatedData['productImage'] = productImage;
-            } else
-                return res.status(400).send({
+                updatedData["productImage"] = uploadImage;
+              } else
+                return res
+                  .status(400)
+                  .send({
                     status: false,
-                    message: "Profile image should be in jpg, jpeg or png format !!",
-                });
-        }
+                    message: "product image should be in jpg, jpeg or png format !!",
+                  });
+            }
+          }
+
 
         if (availableSizes || availableSizes == "") {
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
