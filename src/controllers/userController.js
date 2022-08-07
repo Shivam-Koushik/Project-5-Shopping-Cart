@@ -4,7 +4,7 @@ const { uploadFile } = require("../aws/uploadImage");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const saltRounds = 10;
+const saltRounds = 8;
 
 const register = async function (req, res) {
   try {
@@ -272,15 +272,15 @@ const updateProfile = async function (req, res) {
     const body = req.body;
     const profileImage = req.files;
 
-    if(!validator.isValidBody(body))
+
+    // <-------------reqBody validation----------------->
+
+    if(!validator.isValidBody(body) && !req.files)
       return res.status(400).send({ status :false, message:"Please enter some inputs !!" });
 
     const { fname, lname, email, phone, address } = body;
     let password = body.password;
     const update = {};
-
-    // <--------reqBody validation----------------->
-    // if (!validator.isValidBody(body)) return res.status(400).send({ status: false, message: "Provide details incide body" })
 
     // <---------Fname validation---------------->
     if (fname) {
