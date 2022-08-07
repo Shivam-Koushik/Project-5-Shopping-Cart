@@ -92,6 +92,9 @@ const updateOrder = async function (req, res) {
         if (!validator.isValidObjectId(orderId))
             return res.status(400).send({ status: false, message: "orderId is invalid !! 🙄" })
 
+        const cartDoc = await cartModel.findOne({ userId: userId })
+        if (!cartDoc) return res.status(400).send({ status: false, message: "Cart not exist !! 🙄" })
+
         const orderDoc = await orderModel.findOne({ _id: orderId, userId }).lean();
 
 
@@ -103,7 +106,7 @@ const updateOrder = async function (req, res) {
 
             return res.status(400).send({ status: false, message: `Status (${status}) should be pending , completed or canceled 🙄` });
 
-        if(orderDoc.status === "completed" || orderDoc.status === "canceled")
+        if (orderDoc.status === "completed" || orderDoc.status === "canceled")
             return res.status(400).send({ status: false, message: "Order is already in processed or canceled!! 🙄" });
 
 
@@ -111,10 +114,10 @@ const updateOrder = async function (req, res) {
             return res.status(400).send({ status: false, message: "Order is not cancellable 🙄" });
         }
         orderDoc['status'] = status;
-        
-        const newData = await orderModel.findOneAndUpdate({_id:orderId},orderDoc, {new:true})
-        
-        return res.status(200).send({ status: true, message: "Order Updated successfully  !! 😎", data:newData })
+
+        const newData = await orderModel.findOneAndUpdate({ _id: orderId }, orderDoc, { new: true })
+
+        return res.status(200).send({ status: true, message: "Order Updated successfully  !! 😎", data: newData })
 
     }
     catch (err) {
