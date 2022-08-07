@@ -17,12 +17,13 @@ const createCart = async function (req, res) {
         if (!(validator.isValidBody(data)))
             return res.status(404).send({ status: false, message: "plz provide the data" })
 
-        // let { items, userId } = data;
         let { productId, quantity } = data;
 
+        // <------ProductId Validation--------->
         if(!productId)
             return res.status(400).send({ status: false, message: "Product ID is required" })
 
+        //<---------Quantity Validation------------>
         if (quantity) {
             if (quantity <= 0)
                 return res.status(400).send({ status: false, message: "quantity must be greater than 0" });
@@ -31,7 +32,6 @@ const createCart = async function (req, res) {
             quantity = 1;
         }
 
-        // if (!userId) return res.status(400).send({ status: false, message: "UserId is required !!" })
 
         if (!(validator.isValidObjectId(userId)))
             return res.status(400).send({ status: false, message: "Please provide valid User Id" });
@@ -116,9 +116,11 @@ const updateCart = async function (req, res) {
     try {
         const userId = req.params.userId;
 
+        // <---------UserId Validation----------->
         if (!validator.isValidObjectId(userId))
             return res.status(400).send({ status: false, message: " user id is not valid" });
 
+        // <---------Check user Exist or not------------>
         let userDoc = await userModel.findById(userId);
 
         if (!userDoc)
@@ -128,34 +130,41 @@ const updateCart = async function (req, res) {
         let { cartId, productId, removeProduct } = body;
 
 
+        // <----------ProductId Validation------------>
         if (!productId)
             return res.status(400).send({ status: false, message: "ProductId Is requird !!" })
 
         if (!validator.isValidObjectId(productId))
             return res.status(400).send({ status: false, message: "Invalid ProductId !!" })
 
+        // <----------Check product Exist in db or not------------->
         let productDoc = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!productDoc)
             return res.status(404).send({ status: false, message: `No product Exist with this productId (${productId})` })
 
+
+        // <---------CartId validation-------------->
         if (!cartId)
             return res.status(400).send({ status: false, message: "cartId Is requird !!" })
 
         if (!validator.isValidObjectId(cartId))
             return res.status(400).send({ status: false, message: "Invalid cartId !!" })
 
+        // <-----------Check CartDoc is exist in db or not-------------->
         let cartDoc = await cartModel.findOne({ _id: cartId, isDeleted: false });
 
         if (!cartDoc)
             return res.status(404).send({ status: false, message: "Your Cart is Empty !!" })
 
 
+        // <----------Remove Product Validations-------------->
         if (!(removeProduct == '1' || removeProduct == '0'))
             return res.status(400).send({ status: false, message: "removeProduct  should be 0 or either 1 !!" })
 
         let cartArr = cartDoc.items
         let newCartId = cartDoc._id.toString()
 
+        // <-------Delete a productDoc-------------->
         if (removeProduct == 0) {
 
             for (let i = 0; i < cartArr.length; i++) {
@@ -168,7 +177,7 @@ const updateCart = async function (req, res) {
             }
         }
 
-
+        // <------------Decrease the quantity of a product------------------>
         if (removeProduct == 1) {
             for (let i = 0; i < cartArr.length; i++) {
                 if (cartArr[i].productId.toString() === productId) {
