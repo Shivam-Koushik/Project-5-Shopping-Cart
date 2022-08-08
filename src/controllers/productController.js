@@ -271,27 +271,22 @@ const updateProduct = async function (req, res) {
         }
 
         // <----------productImage Validation-------------->
-        if (productImage) {
-            if (productImage.length === 0) return res.status(400).send({ status: false, message: "Please Choose a Image !!" })
-      
-            else if (productImage.length > 0) {
-              if (
+        if (productImage && productImage.length > 0) {
+            if (
                 productImage[0].mimetype == "image/jpg" ||
                 productImage[0].mimetype == "image/png" ||
                 productImage[0].mimetype == "image/jpeg"
-              ) {
+            ) {
                 const uploadImage = await uploadFile(productImage[0]);
                 updatedData["productImage"] = uploadImage;
-              } else
+            } else
                 return res
-                  .status(400)
-                  .send({
-                    status: false,
-                    message: "product image should be in jpg, jpeg or png format !!",
-                  });
-            }
-          }
-
+                    .status(400)
+                    .send({
+                        status: false,
+                        message: "product image should be in jpg, jpeg or png format !!",
+                    });
+        }
 
         if (availableSizes || availableSizes == "") {
             let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
